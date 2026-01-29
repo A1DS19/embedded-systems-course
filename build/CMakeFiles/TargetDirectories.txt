@@ -1,0 +1,3 @@
+/Users/jose.padilla/Desktop/courses/microcontrollers/build/CMakeFiles/main.dir
+/Users/jose.padilla/Desktop/courses/microcontrollers/build/CMakeFiles/edit_cache.dir
+/Users/jose.padilla/Desktop/courses/microcontrollers/build/CMakeFiles/rebuild_cache.dir
