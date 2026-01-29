@@ -3,6 +3,7 @@
 #include "basics.hpp"
 #include "bitwise.hpp"
 #include "operators.hpp"
+#include "vectors_arrays.hpp"
 #include <stdlib.h>
 
 int main() {
@@ -17,6 +18,7 @@ int main() {
   bitwise_advanced_demo();
   bitwise_microcontroller_demo();
   operators_demo();
+  vectors();
 
   return EXIT_SUCCESS;
 }
