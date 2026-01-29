@@ -2,9 +2,11 @@
 #include <iostream>
 #include <vector>
 
+using namespace std;
+
 void vectors() {
-  std::vector<char> characters = {'a', 'b', 'c'};
-  for (char c : characters) {
-    std::cout << c << std::endl;
+  vector<char> characters = {'a', 'b', 'c'};
+  for (auto c : characters) {
+    cout << c << endl;
   }
 }
