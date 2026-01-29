@@ -1,0 +1,492 @@
+=============================================================================
+COMPREHENSIVE BIT MANIPULATION GUIDE
+=============================================================================
+
+WHY BIT MANIPULATION IN MICROCONTROLLERS?
+  • Direct hardware register access (GPIO, timers, interrupts)
+  • Efficient memory usage (pack multiple values in one byte)
+  • Fast operations (no division/multiplication)
+  • Low power consumption (fewer CPU cycles)
+
+
+=============================================================================
+UNDERSTANDING BITS & BYTES
+=============================================================================
+
+A BYTE = 8 BITS
+
+Bit position:  7    6    5    4    3    2    1    0
+               ↓    ↓    ↓    ↓    ↓    ↓    ↓    ↓
+Binary:       [1]  [0]  [1]  [1]  [0]  [0]  [1]  [0]
+               ↑                                  ↑
+           MSB (Most Significant)    LSB (Least Significant)
+
+Value:        128 + 0 + 32 + 16 + 0 + 0 + 2 + 0 = 178
+
+Each bit position represents a power of 2:
+  Bit 0: 2^0 = 1
+  Bit 1: 2^1 = 2
+  Bit 2: 2^2 = 4
+  Bit 3: 2^3 = 8
+  Bit 4: 2^4 = 16
+  Bit 5: 2^5 = 32
+  Bit 6: 2^6 = 64
+  Bit 7: 2^7 = 128
+
+
+=============================================================================
+BIT SHIFTING OPERATORS
+=============================================================================
+
+LEFT SHIFT (<<) - Multiply by Powers of 2
+─────────────────────────────────────────
+
+Original:  0b00000101 = 5
+           << 1        ← Shift left by 1
+Result:    0b00001010 = 10  (5 * 2)
+
+Original:  0b00000101 = 5
+           << 2        ← Shift left by 2
+Result:    0b00010100 = 20  (5 * 4)
+
+Original:  0b00000101 = 5
+           << 3        ← Shift left by 3
+Result:    0b00101000 = 40  (5 * 8)
+
+FORMULA: value << n  =  value * (2^n)
+
+USE CASES:
+  • Fast multiplication by powers of 2
+  • Creating bit masks: (1 << 3) = 0b00001000
+  • Positioning data in specific bit locations
+
+
+RIGHT SHIFT (>>) - Divide by Powers of 2
+─────────────────────────────────────────
+
+Original:  0b00101000 = 40
+           >> 1        ← Shift right by 1
+Result:    0b00010100 = 20  (40 / 2)
+
+Original:  0b00101000 = 40
+           >> 2        ← Shift right by 2
+Result:    0b00001010 = 10  (40 / 4)
+
+Original:  0b00101000 = 40
+           >> 3        ← Shift right by 3
+Result:    0b00000101 = 5   (40 / 8)
+
+FORMULA: value >> n  =  value / (2^n)
+
+USE CASES:
+  • Fast division by powers of 2
+  • Extracting higher bits
+  • Scaling values down
+
+
+=============================================================================
+BITWISE OPERATORS
+=============================================================================
+
+AND (&) - Both Bits Must Be 1
+──────────────────────────────
+
+  10110010
+& 11110000
+──────────
+  10110000  ← Result is 1 only where BOTH are 1
+
+TRUTH TABLE:
+  0 & 0 = 0
+  0 & 1 = 0
+  1 & 0 = 0
+  1 & 1 = 1  ← Only this produces 1
+
+USE CASES:
+  • Masking (isolate specific bits)
+  • Check if bit is set: if (value & (1 << bit))
+  • Clear unwanted bits: value & 0x0F (keep only lower 4 bits)
+
+
+OR (|) - Either Bit Is 1
+────────────────────────
+
+  10110010
+| 00001111
+──────────
+  10111111  ← Result is 1 where EITHER is 1
+
+TRUTH TABLE:
+  0 | 0 = 0  ← Only this produces 0
+  0 | 1 = 1
+  1 | 0 = 1
+  1 | 1 = 1
+
+USE CASES:
+  • Setting bits: value |= (1 << bit)
+  • Combining multiple flags
+  • Setting multiple bits at once
+
+
+XOR (^) - Bits Are Different
+────────────────────────────
+
+  10110010
+^ 11110000
+──────────
+  01000010  ← Result is 1 where bits DIFFER
+
+TRUTH TABLE:
+  0 ^ 0 = 0
+  0 ^ 1 = 1  ← Different
+  1 ^ 0 = 1  ← Different
+  1 ^ 1 = 0
+
+USE CASES:
+  • Toggling bits: value ^= (1 << bit)
+  • Swap without temp: a ^= b; b ^= a; a ^= b;
+  • Simple encryption/checksum
+
+
+NOT (~) - Flip All Bits
+───────────────────────
+
+~ 10110010
+──────────
+  01001101  ← All bits flipped
+
+TRUTH TABLE:
+  ~0 = 1
+  ~1 = 0
+
+USE CASES:
+  • Creating inverse masks: ~(1 << bit)
+  • Clearing specific bits: value &= ~(1 << bit)
+  • Bitwise negation
+
+
+=============================================================================
+COMMON BIT MANIPULATION OPERATIONS
+=============================================================================
+
+SET A BIT (Make it 1)
+─────────────────────
+Original:   00000000
+Set bit 3:  00001000  ← Bit 3 is now 1
+
+CODE: value |= (1 << bit);
+WHY:  OR with a mask that has only that bit set
+
+STEP-BY-STEP:
+  1 << 3           = 00001000  (create mask)
+  00000000 | 00001000 = 00001000  (OR sets the bit)
+
+
+CLEAR A BIT (Make it 0)
+───────────────────────
+Original:   11111111
+Clear bit 3:11110111  ← Bit 3 is now 0
+
+CODE: value &= ~(1 << bit);
+WHY:  AND with inverted mask (all 1s except target bit)
+
+STEP-BY-STEP:
+  1 << 3           = 00001000  (create mask)
+  ~00001000        = 11110111  (invert mask)
+  11111111 & 11110111 = 11110111  (AND clears the bit)
+
+
+TOGGLE A BIT (Flip it: 0→1 or 1→0)
+──────────────────────────────────
+Original:   00001000
+Toggle bit 3:00000000  ← Bit 3 flipped from 1→0
+
+CODE: value ^= (1 << bit);
+WHY:  XOR with mask flips that bit
+
+STEP-BY-STEP:
+  1 << 3           = 00001000  (create mask)
+  00001000 ^ 00001000 = 00000000  (XOR flips the bit)
+
+
+CHECK IF BIT IS SET
+───────────────────
+Value:      00001000
+Check bit 3: true  ← Bit 3 is 1
+
+CODE: bool isSet = (value & (1 << bit)) != 0;
+WHY:  AND isolates the bit, check if result is non-zero
+
+STEP-BY-STEP:
+  1 << 3           = 00001000  (create mask)
+  00001000 & 00001000 = 00001000  (AND isolates)
+  00001000 != 0      = true      (check if non-zero)
+
+
+GET BIT VALUE (0 or 1)
+──────────────────────
+Value:      00001000
+Get bit 3:  1
+
+CODE: uint8_t bit = (value >> bit_position) & 1;
+WHY:  Shift bit to position 0, then mask to get only bit 0
+
+STEP-BY-STEP:
+  00001000 >> 3 = 00000001  (shift bit to position 0)
+  00000001 & 1  = 00000001  (mask to get only bit 0)
+
+
+=============================================================================
+REAL-WORLD MICROCONTROLLER EXAMPLES
+=============================================================================
+
+EXAMPLE 1: Arduino Digital Pin Control
+───────────────────────────────────────
+
+Arduino uses these registers:
+  • DDR (Data Direction Register): 0=input, 1=output
+  • PORT (Output Register): 0=LOW, 1=HIGH
+  • PIN (Input Register): Read pin state
+
+// Set pin 13 as OUTPUT
+DDRB |= (1 << PB5);  // Bit 5 of DDRB controls pin 13
+
+// Set pin 13 HIGH (turn on LED)
+PORTB |= (1 << PB5);
+
+// Set pin 13 LOW (turn off LED)
+PORTB &= ~(1 << PB5);
+
+// Toggle pin 13
+PORTB ^= (1 << PB5);
+
+// Read pin 13 state
+bool state = (PINB & (1 << PB5)) != 0;
+
+
+EXAMPLE 2: Status Register with Multiple Flags
+───────────────────────────────────────────────
+
+uint8_t status = 0x00;
+
+// Define flags
+#define FLAG_READY    0  // Bit 0
+#define FLAG_ERROR    1  // Bit 1
+#define FLAG_BUSY     2  // Bit 2
+#define FLAG_COMPLETE 3  // Bit 3
+
+// Set flags
+status |= (1 << FLAG_READY);
+status |= (1 << FLAG_COMPLETE);
+
+// Check flags
+if (status & (1 << FLAG_ERROR)) {
+    // Handle error
+}
+
+if (!(status & (1 << FLAG_BUSY))) {
+    // Not busy, can proceed
+}
+
+// Clear flag
+status &= ~(1 << FLAG_ERROR);
+
+
+EXAMPLE 3: Packing Multiple Sensor Values
+──────────────────────────────────────────
+
+Pack 3 sensors into 1 byte to save memory:
+  • Bits 0-2: Temperature (0-7)
+  • Bits 3-5: Light level (0-7)
+  • Bits 6-7: Humidity (0-3)
+
+// Pack values
+uint8_t temp = 5;   // 0-7
+uint8_t light = 6;  // 0-7
+uint8_t humid = 2;  // 0-3
+
+uint8_t packed = 0;
+packed |= (temp & 0b111);         // Bits 0-2
+packed |= ((light & 0b111) << 3); // Bits 3-5
+packed |= ((humid & 0b11) << 6);  // Bits 6-7
+
+// Unpack values
+uint8_t temp_read = packed & 0b111;           // Extract bits 0-2
+uint8_t light_read = (packed >> 3) & 0b111;   // Extract bits 3-5
+uint8_t humid_read = (packed >> 6) & 0b11;    // Extract bits 6-7
+
+
+EXAMPLE 4: PWM (Pulse Width Modulation)
+────────────────────────────────────────
+
+PWM uses 8-bit value (0-255) for duty cycle:
+  • 0   = 0% (always off)
+  • 127 = 50% (half power)
+  • 255 = 100% (always on)
+
+// Set LED to 50% brightness
+analogWrite(LED_PIN, 127);
+
+// Set LED to 75% brightness (75% of 255)
+analogWrite(LED_PIN, 192);
+
+// Set LED to 25% brightness
+analogWrite(LED_PIN, 64);
+
+
+EXAMPLE 5: Operating on Multiple Pins at Once
+──────────────────────────────────────────────
+
+Instead of setting pins one by one, use masks:
+
+// Turn on pins 3, 4, 5 at once
+uint8_t ledMask = 0b00111000;  // Bits 3, 4, 5
+PORTB |= ledMask;
+
+// Turn off pins 3, 4, 5 at once
+PORTB &= ~ledMask;
+
+// Toggle pins 3, 4, 5 at once
+PORTB ^= ledMask;
+
+
+=============================================================================
+ADVANCED OPERATIONS
+=============================================================================
+
+EXTRACT BIT RANGE
+─────────────────
+Extract bits 2-5 from a byte:
+
+uint8_t value = 0b11010110;
+uint8_t start = 2;
+uint8_t length = 4;
+
+uint8_t mask = (1 << length) - 1;  // Create mask: 0b1111
+uint8_t result = (value >> start) & mask;
+// Result: 0b0101 = 5
+
+
+COUNT SET BITS (Population Count)
+──────────────────────────────────
+Count how many bits are set to 1:
+
+uint8_t count = 0;
+uint8_t value = 0b10101101;  // 5 ones
+
+while (value) {
+    count += value & 1;  // Add LSB
+    value >>= 1;         // Shift right
+}
+// count = 5
+
+
+ROTATE BITS (Circular Shift)
+────────────────────────────
+Unlike shift, bits wrap around:
+
+// Rotate left
+uint8_t rotateLeft(uint8_t byte, uint8_t n) {
+    return (byte << n) | (byte >> (8 - n));
+}
+
+Original:    10110001
+Rotate left: 11000110  ← Bits wrap around
+
+
+REVERSE BITS
+────────────
+Reverse the order of all bits:
+
+uint8_t reverseBits(uint8_t byte) {
+    uint8_t result = 0;
+    for (int i = 0; i < 8; i++) {
+        result = (result << 1) | ((byte >> i) & 1);
+    }
+    return result;
+}
+
+Original: 10110010
+Reversed: 01001101
+
+
+SWAP NIBBLES (4-bit halves)
+───────────────────────────
+Swap high and low 4 bits:
+
+uint8_t swapNibbles(uint8_t byte) {
+    return (byte << 4) | (byte >> 4);
+}
+
+Original: 0xAB = 10101011
+Swapped:  0xBA = 10111010
+
+
+=============================================================================
+COMMON PITFALLS & TIPS
+=============================================================================
+
+1. OPERATOR PRECEDENCE
+   ✗ WRONG:  if (value & 1 << 3)      // Parsed as: value & (1 << 3)
+   ✓ RIGHT:  if ((value & (1 << 3)) != 0)
+
+2. SIGN EXTENSION (with signed types)
+   int8_t x = -1;    // 0b11111111
+   int16_t y = x >> 1;  // 0b1111111111111111 (sign extended!)
+   Use unsigned types for bit manipulation!
+
+3. SHIFT BY VARIABLE
+   Ensure shift amount is valid (< bit width):
+   uint8_t value = 5;
+   value << 10;  // Undefined behavior! (10 >= 8)
+
+4. COMBINING OPERATIONS
+   To modify a bit based on a boolean:
+   if (flag) value |= mask;   // Set
+   else value &= ~mask;       // Clear
+
+   Better:
+   value = (value & ~mask) | (flag ? mask : 0);
+
+5. REGISTER ACCESS
+   Always use volatile for hardware registers:
+   volatile uint8_t* PORT = (volatile uint8_t*)0x25;
+
+
+=============================================================================
+PERFORMANCE COMPARISON
+=============================================================================
+
+OPERATION         | BIT MANIPULATION  | ARITHMETIC
+──────────────────|───────────────────|─────────────
+Multiply by 8     | value << 3        | value * 8
+Divide by 4       | value >> 2        | value / 4
+Check if even     | !(value & 1)      | value % 2 == 0
+Get bit 5         | (value >> 5) & 1  | (value / 32) % 2
+Set bit 3         | value |= (1<<3)   | value = value + 8
+
+Bit operations are:
+  • Faster (single CPU instruction)
+  • Smaller code size
+  • Lower power consumption
+
+
+=============================================================================
+SUMMARY - QUICK REFERENCE
+=============================================================================
+
+SET bit:     value |= (1 << n)
+CLEAR bit:   value &= ~(1 << n)
+TOGGLE bit:  value ^= (1 << n)
+CHECK bit:   (value & (1 << n)) != 0
+GET bit:     (value >> n) & 1
+
+MASK low N bits:    (1 << N) - 1
+SHIFT left N:       value << N  (multiply by 2^N)
+SHIFT right N:      value >> N  (divide by 2^N)
+
+HIGH byte:          value >> 8
+LOW byte:           value & 0xFF
+MAKE word:          (high << 8) | low
+
+=============================================================================

@@ -1,0 +1,425 @@
+=============================================================================
+LLDB DEBUGGER GUIDE FOR MAC
+=============================================================================
+
+lldb is Apple's debugger - the standard on macOS
+Comes with Xcode Command Line Tools
+
+CHECK IF INSTALLED:
+  lldb --version
+
+
+=============================================================================
+BASIC WORKFLOW
+=============================================================================
+
+1. BUILD WITH DEBUG SYMBOLS
+   make BUILD_TYPE=Debug build
+
+2. START DEBUGGER
+   lldb ./bin/main
+
+3. SET BREAKPOINTS
+   (lldb) breakpoint set --name main
+   (lldb) b main                        # Short form
+
+4. RUN PROGRAM
+   (lldb) run
+   (lldb) r                             # Short form
+
+5. PROGRAM PAUSES AT BREAKPOINT
+   - Shows current line
+   - Shows source code
+   - Wait for your commands
+
+6. CONTROL EXECUTION
+   (lldb) next      # Step over (execute current line)
+   (lldb) n         # Short form
+
+   (lldb) step      # Step into (enter functions)
+   (lldb) s         # Short form
+
+   (lldb) finish    # Step out (finish current function)
+
+   (lldb) continue  # Continue to next breakpoint
+   (lldb) c         # Short form
+
+7. INSPECT VARIABLES
+   (lldb) print variable_name
+   (lldb) p variable_name              # Short form
+
+   (lldb) frame variable               # Show all local variables
+   (lldb) fr v                         # Short form
+
+8. EXIT
+   (lldb) quit
+   (lldb) q
+
+
+=============================================================================
+SETTING BREAKPOINTS
+=============================================================================
+
+BY FUNCTION NAME:
+  (lldb) breakpoint set --name factorial
+  (lldb) b factorial
+
+BY FILE AND LINE:
+  (lldb) breakpoint set --file basics.cpp --line 15
+  (lldb) b basics.cpp:15
+
+BY SOURCE LOCATION (current file):
+  (lldb) breakpoint set --line 42
+  (lldb) b 42
+
+CONDITIONAL BREAKPOINT:
+  (lldb) breakpoint set --name factorial --condition 'n > 5'
+
+LIST BREAKPOINTS:
+  (lldb) breakpoint list
+  (lldb) br l
+
+DELETE BREAKPOINT:
+  (lldb) breakpoint delete 1           # Delete breakpoint #1
+  (lldb) br del 1
+
+DELETE ALL BREAKPOINTS:
+  (lldb) breakpoint delete
+  (lldb) br del
+
+
+=============================================================================
+INSPECTING DATA
+=============================================================================
+
+PRINT VARIABLE:
+  (lldb) print count
+  (lldb) p count
+
+PRINT IN DIFFERENT FORMATS:
+  (lldb) p/x count     # Hexadecimal
+  (lldb) p/t count     # Binary
+  (lldb) p/d count     # Decimal (default)
+  (lldb) p/o count     # Octal
+
+PRINT ARRAY ELEMENTS:
+  (lldb) p arr[0]
+  (lldb) p arr[3]
+
+PRINT EXPRESSION:
+  (lldb) p count * 2
+  (lldb) p arr[i] + arr[i+1]
+  (lldb) p (1 << 3)
+
+SHOW ALL LOCAL VARIABLES:
+  (lldb) frame variable
+  (lldb) fr v
+
+SHOW SPECIFIC VARIABLE:
+  (lldb) frame variable count
+  (lldb) fr v count
+
+
+=============================================================================
+CONTROLLING EXECUTION
+=============================================================================
+
+STEP OVER (execute current line, don't enter functions):
+  (lldb) next
+  (lldb) n
+
+STEP INTO (enter function calls):
+  (lldb) step
+  (lldb) s
+
+STEP OUT (finish current function):
+  (lldb) finish
+  (lldb) fin
+
+CONTINUE TO NEXT BREAKPOINT:
+  (lldb) continue
+  (lldb) c
+
+RUN UNTIL LINE:
+  (lldb) thread until 25               # Run until line 25
+
+
+=============================================================================
+VIEWING CODE & STACK
+=============================================================================
+
+SHOW CURRENT SOURCE CODE:
+  (lldb) source list
+  (lldb) l
+
+SHOW MORE LINES:
+  (lldb) l 10         # Show around line 10
+  (lldb) l func       # Show around function
+
+VIEW CALL STACK (backtrace):
+  (lldb) thread backtrace
+  (lldb) bt
+
+SWITCH STACK FRAMES:
+  (lldb) frame select 1                # Go to frame 1
+  (lldb) f 1
+  (lldb) up                            # Go up one frame
+  (lldb) down                          # Go down one frame
+
+
+=============================================================================
+PRACTICAL EXAMPLE - DEBUG YOUR CODE
+=============================================================================
+
+EXAMPLE 1: Debug hex() function
+───────────────────────────────
+
+$ make BUILD_TYPE=Debug build
+$ lldb ./bin/main
+
+(lldb) b basics.cpp:15
+(lldb) run
+
+Program pauses at breakpoint in hex() function
+
+(lldb) frame variable
+(int) hex_number = 291
+
+(lldb) p hex_number
+(int) $0 = 291
+
+(lldb) p/x hex_number
+(int) $1 = 0x00000123
+
+(lldb) continue
+# Program continues and prints output
+
+
+EXAMPLE 2: Debug factorial recursion
+─────────────────────────────────────
+
+(lldb) b factorial
+(lldb) run
+
+Program pauses at factorial function
+
+(lldb) p n
+(int) $0 = 5
+
+(lldb) bt
+# Shows call stack with all recursive calls
+
+(lldb) s
+# Step into recursive call
+
+(lldb) p n
+(int) $1 = 4
+
+(lldb) bt
+# Stack now shows 2 levels
+
+(lldb) c
+# Continue to see final result
+
+
+EXAMPLE 3: Debug bit manipulation
+──────────────────────────────────
+
+(lldb) b bitwise.cpp:20
+(lldb) run
+
+(lldb) p byte
+(uint8_t) $0 = 0
+
+(lldb) p bit
+(uint8_t) $1 = 3
+
+(lldb) p (1 << bit)
+(int) $2 = 8
+
+(lldb) p/t (1 << bit)
+(int) $3 = 0b00000000000000000000000000001000
+
+(lldb) n
+# Execute the line
+
+(lldb) p/t byte
+(uint8_t) $4 = 0b00001000
+
+
+EXAMPLE 4: Debug loop
+─────────────────────
+
+(lldb) b operators.cpp:230
+(lldb) run
+
+(lldb) p i
+(int) $0 = 0
+
+(lldb) n
+# Next iteration
+
+(lldb) p i
+(int) $1 = 1
+
+(lldb) n
+(lldb) p i
+(int) $2 = 2
+
+
+=============================================================================
+MODIFYING VARIABLES
+=============================================================================
+
+CHANGE VARIABLE VALUE DURING DEBUG:
+  (lldb) expr count = 100
+  (lldb) p count
+  (int) $0 = 100
+
+USEFUL FOR:
+  • Testing different values without recompiling
+  • Forcing specific code paths
+  • Skipping problematic sections
+
+
+=============================================================================
+WATCHPOINTS (Data Breakpoints)
+=============================================================================
+
+BREAK WHEN VARIABLE CHANGES:
+  (lldb) watchpoint set variable count
+  (lldb) wa s v count
+
+BREAK WHEN MEMORY LOCATION CHANGES:
+  (lldb) watchpoint set expression -- &count
+
+LIST WATCHPOINTS:
+  (lldb) watchpoint list
+
+DELETE WATCHPOINT:
+  (lldb) watchpoint delete 1
+
+
+=============================================================================
+USEFUL SETTINGS
+=============================================================================
+
+ENABLE COLORS:
+  (lldb) settings set stop-line-count-before 3
+  (lldb) settings set stop-line-count-after 3
+
+AUTO PRINT VARIABLES:
+  (lldb) settings set target.process.stop-on-shared-library-events false
+
+
+=============================================================================
+COMMAND SHORTCUTS
+=============================================================================
+
+Full Command         | Short Form
+─────────────────────┼───────────
+breakpoint set       | b
+breakpoint list      | br l
+breakpoint delete    | br del
+run                  | r
+continue             | c
+next                 | n
+step                 | s
+finish               | fin
+print                | p
+frame variable       | fr v
+thread backtrace     | bt
+source list          | l
+quit                 | q
+
+
+=============================================================================
+DEBUGGING WITH ARGUMENTS
+=============================================================================
+
+RUN WITH COMMAND LINE ARGUMENTS:
+  (lldb) run arg1 arg2 arg3
+
+SET ARGUMENTS BEFORE RUNNING:
+  (lldb) settings set target.run-args arg1 arg2
+
+
+=============================================================================
+TIPS & TRICKS
+=============================================================================
+
+1. SHOW DISASSEMBLY:
+   (lldb) disassemble
+   (lldb) di
+
+2. MEMORY EXAMINATION:
+   (lldb) memory read &variable
+   (lldb) x &variable
+
+3. PRINT SIZEOF:
+   (lldb) p sizeof(arr)
+
+4. CALL FUNCTIONS:
+   (lldb) p factorial(10)
+   (lldb) expr printf("Debug: %d\n", count)
+
+5. REPEAT LAST COMMAND:
+   Just press ENTER
+
+
+=============================================================================
+COMMON ISSUES
+=============================================================================
+
+ISSUE 1: No debug symbols
+  SYMPTOM: Can't see variables, shows optimized out
+  FIX: Build with debug symbols
+       make BUILD_TYPE=Debug build
+
+ISSUE 2: Breakpoint doesn't work
+  SYMPTOM: Breakpoint never hits
+  FIX: Check if code is actually executed
+       Verify file path is correct
+
+ISSUE 3: "Unable to find executable"
+  SYMPTOM: Can't start debugging
+  FIX: Make sure binary exists
+       ls -la ./bin/main
+
+
+=============================================================================
+COMPARISON: lldb vs VSCode
+=============================================================================
+
+┌─────────────────────┬─────────────────┬─────────────────┐
+│ Feature             │ lldb (CLI)      │ VSCode (GUI)    │
+├─────────────────────┼─────────────────┼─────────────────┤
+│ Learning curve      │ Steeper         │ Easier          │
+│ Speed               │ Faster startup  │ Slower startup  │
+│ Visual feedback     │ Text only       │ Visual UI       │
+│ Remote debugging    │ Easy            │ Possible        │
+│ Scripting           │ Powerful        │ Limited         │
+│ Integration         │ Terminal        │ Editor          │
+│ Mouse support       │ No              │ Yes             │
+└─────────────────────┴─────────────────┴─────────────────┘
+
+RECOMMENDATION:
+  • Start with VSCode (easier)
+  • Learn lldb for remote/advanced debugging
+
+
+=============================================================================
+QUICK REFERENCE
+=============================================================================
+
+START:     lldb ./bin/main
+BREAK:     b main
+RUN:       r
+STEP:      n (over), s (into), fin (out)
+CONTINUE:  c
+PRINT:     p variable
+VARS:      fr v
+STACK:     bt
+QUIT:      q
+
+=============================================================================

@@ -1,0 +1,176 @@
+=============================================================================
+PRACTICAL EXAMPLES: constexpr in Action
+=============================================================================
+
+// ===== EXAMPLE 1: Compile-Time vs Runtime =====
+
+constexpr int factorial(int n) noexcept {
+    return n <= 1 ? 1 : n * factorial(n - 1);
+}
+
+// COMPILE-TIME: Input is constant
+constexpr int fact5 = factorial(5);
+// Compiler computes: 120
+// Assembly: Just stores the value 120 (no function call!)
+
+// RUNTIME: Input is variable
+int userInput = getUserInput();
+int result = factorial(userInput);
+// Compiler generates actual function that runs at runtime
+
+
+// ===== EXAMPLE 2: MicroController Usage =====
+
+class MicroController {
+    uint64_t pins = 0;
+public:
+    constexpr bool isPinHigh(uint8_t pin) const noexcept {
+        return (pins & (1 << pin)) != 0;
+    }
+};
+
+// COMPILE-TIME: Pin number is constant
+constexpr MicroController mcu;
+constexpr bool led = mcu.isPinHigh(13);  // Evaluated at compile-time!
+
+// RUNTIME: Pin number from variable
+MicroController runtime_mcu;
+uint8_t pin = readSensor();
+bool state = runtime_mcu.isPinHigh(pin);  // Evaluated at runtime
+
+
+// ===== EXAMPLE 3: Why constexpr in Classes? =====
+
+class Timer {
+    uint32_t frequency;
+public:
+    // WITH constexpr - flexible!
+    constexpr uint32_t getPeriod() const noexcept {
+        return 1000000 / frequency;  // microseconds
+    }
+};
+
+// Can use at compile-time
+constexpr Timer timer{1000};
+constexpr uint32_t period = timer.getPeriod();  // Works!
+
+// Can also use at runtime
+Timer runtime_timer{getUserFrequency()};
+uint32_t runtime_period = runtime_timer.getPeriod();  // Also works!
+
+
+// ===== EXAMPLE 4: Free Functions Outside Classes =====
+
+// These work EXACTLY the same outside classes!
+
+// constexpr + noexcept
+constexpr uint8_t reverseBits(uint8_t byte) noexcept {
+    uint8_t result = 0;
+    for (int i = 0; i < 8; i++) {
+        result = (result << 1) | ((byte >> i) & 1);
+    }
+    return result;
+}
+
+// Compile-time usage
+constexpr uint8_t reversed = reverseBits(0b11010010);  // Pre-computed!
+
+// Runtime usage
+uint8_t input = readByte();
+uint8_t output = reverseBits(input);  // Computed at runtime
+
+
+// ===== EXAMPLE 5: When NOT to Use constexpr =====
+
+// ❌ Can't use constexpr - involves I/O
+int readSensor() {
+    return analogRead(A0);  // Hardware I/O - can't be compile-time
+}
+
+// ❌ Can't use constexpr - modifies global state
+int counter = 0;
+int increment() {
+    return ++counter;  // Side effect - can't be compile-time
+}
+
+// ✅ CAN use constexpr - pure calculation
+constexpr int calculate(int x) noexcept {
+    return x * 2 + 5;  // No side effects, no I/O
+}
+
+
+// ===== EXAMPLE 6: const Member Function Meaning =====
+
+class BankAccount {
+    double balance = 100.0;
+public:
+    // const: Doesn't modify balance (read-only)
+    double getBalance() const noexcept {
+        return balance;  ✓ Can read
+        // balance += 10;  ✗ ERROR: Can't modify!
+    }
+
+    // NOT const: Modifies balance
+    void deposit(double amount) {
+        balance += amount;  ✓ Can modify
+    }
+};
+
+const BankAccount account;
+account.getBalance();   ✓ OK - getBalance() is const
+// account.deposit(50); ✗ ERROR - deposit() is not const
+
+
+// ===== EXAMPLE 7: Keyword Combinations =====
+
+// Best: constexpr + const + noexcept
+class Math {
+public:
+    constexpr int square(int x) const noexcept {
+        return x * x;
+        // Compile-time when possible
+        // Doesn't modify object
+        // Never throws exceptions
+    }
+};
+
+// Good: inline + noexcept
+inline void fastSwap(int& a, int& b) noexcept {
+    int temp = a;
+    a = b;
+    b = temp;
+    // Suggests inlining (fast)
+    // Never throws
+}
+
+// Perfect for embedded: [[nodiscard]] + constexpr + noexcept
+[[nodiscard]] constexpr bool isInRange(int value, int min, int max) noexcept {
+    return value >= min && value <= max;
+    // Compiler warns if result ignored
+    // Can evaluate at compile-time
+    // Never throws
+}
+
+// Usage
+if (isInRange(sensorValue, 0, 100)) {  ✓ Good
+    // ...
+}
+isInRange(sensorValue, 0, 100);  ⚠️ WARNING: result not used!
+
+
+=============================================================================
+SUMMARY
+=============================================================================
+
+constexpr → "I CAN run at compile-time (if you give me constants)"
+const     → "I WON'T modify my object's state" (member functions only)
+noexcept  → "I NEVER throw exceptions"
+inline    → "I'm small, please inline me" (suggestion to compiler)
+
+ALL these keywords work in:
+  ✓ Classes (member functions)
+  ✓ Free functions (outside classes)
+  ✓ Templates
+  ✓ Headers and source files
+
+Use them together for maximum performance!
