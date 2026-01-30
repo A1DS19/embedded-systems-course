@@ -2,6 +2,9 @@
 #include "advanced.hpp"
 #include "basics.hpp"
 #include "bitwise.hpp"
+#include "clock.hpp"
+#include "conditionals.hpp"
+#include "memory.hpp"
 #include "operators.hpp"
 #include "vectors_arrays.hpp"
 #include <stdlib.h>
@@ -19,6 +22,9 @@ int main() {
   bitwise_microcontroller_demo();
   operators_demo();
   vectors();
+  conditionals();
+  my_clock();
+  memory();
 
   return EXIT_SUCCESS;
 }
