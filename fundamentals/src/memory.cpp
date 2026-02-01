@@ -1,18 +1,23 @@
 #include "memory.hpp"
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#include <iostream>
+#include <vector>
 
 void memory() {
-  const char *source = "hello world";
-  char *destination = (char *)malloc(strlen(source) + 1);
+  struct Player {
+    int pos_x_;
+    int pos_y_;
+    void print() const noexcept {
+      std::cout << pos_x_ << ":" << pos_y_ << "\n";
+    }
+  };
 
-  memcpy(destination, source, strlen(source) + 1);
-  printf("\n%s", destination);
+  std::vector<Player *> players;
 
-  char source_2[5] = "1234";
-  const int source_2_len = strlen(source_2) + 1;
-  char destination_2[source_2_len];
-  memcpy(destination_2, source_2, source_2_len);
-  printf("\n%s", destination_2);
+  Player player_1 = {.pos_x_ = 0, .pos_y_ = 1};
+
+  players.push_back(&player_1);
+
+  for (auto &player : players) {
+    player->print();
+  }
 }
