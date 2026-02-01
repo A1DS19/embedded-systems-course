@@ -1,7 +1,34 @@
 CompileFlags:
-  CompilationDatabase: build/
+  Add:
+    - -std=c++23
+    - -Wall
+    - -Wextra
+    - -I/usr/include/c++/13
+    - -I/usr/include/x86_64-linux-gnu/c++/13
+    - -I/usr/include/c++/13/backward
+  Remove:
+    - -W*
+  Compiler: g++
+
 Index:
   Background: Build
+
 Diagnostics:
   UnusedIncludes: Strict
   MissingIncludes: Strict
+  ClangTidy:
+    Add:
+      - modernize-*
+      - performance-*
+      - readability-*
+    Remove:
+      - modernize-use-trailing-return-type
+
+InlayHints:
+  Enabled: true
+  ParameterNames: true
+  DeducedTypes: true
+  Designators: true
+
+Hover:
+  ShowAKA: true
