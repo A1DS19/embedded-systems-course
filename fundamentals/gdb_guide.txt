@@ -1,0 +1,541 @@
+=============================================================================
+GDB DEBUGGER GUIDE FOR LINUX
+=============================================================================
+
+gdb is the GNU Debugger - the standard on Linux systems
+Usually comes pre-installed or available via package manager
+
+CHECK IF INSTALLED:
+  gdb --version
+
+INSTALL IF NEEDED:
+  sudo apt install gdb          # Debian/Ubuntu
+  sudo dnf install gdb          # Fedora
+  sudo pacman -S gdb            # Arch
+
+
+=============================================================================
+BASIC WORKFLOW
+=============================================================================
+
+1. BUILD WITH DEBUG SYMBOLS
+   make BUILD_TYPE=Debug build
+
+2. START DEBUGGER
+   gdb ./bin/main
+
+3. SET BREAKPOINTS
+   (gdb) break main
+   (gdb) b main                        # Short form
+
+4. RUN PROGRAM
+   (gdb) run
+   (gdb) r                             # Short form
+
+5. PROGRAM PAUSES AT BREAKPOINT
+   - Shows current line
+   - Shows source code
+   - Wait for your commands
+
+6. CONTROL EXECUTION
+   (gdb) next      # Step over (execute current line)
+   (gdb) n         # Short form
+
+   (gdb) step      # Step into (enter functions)
+   (gdb) s         # Short form
+
+   (gdb) finish    # Step out (finish current function)
+   (gdb) fin       # Short form
+
+   (gdb) continue  # Continue to next breakpoint
+   (gdb) c         # Short form
+
+7. INSPECT VARIABLES
+   (gdb) print variable_name
+   (gdb) p variable_name              # Short form
+
+   (gdb) info locals                  # Show all local variables
+
+8. EXIT
+   (gdb) quit
+   (gdb) q
+
+
+=============================================================================
+SETTING BREAKPOINTS
+=============================================================================
+
+BY FUNCTION NAME:
+  (gdb) break factorial
+  (gdb) b factorial
+
+BY FILE AND LINE:
+  (gdb) break basics.cpp:15
+  (gdb) b basics.cpp:15
+
+BY LINE NUMBER (current file):
+  (gdb) break 42
+  (gdb) b 42
+
+CONDITIONAL BREAKPOINT:
+  (gdb) break factorial if n > 5
+
+LIST BREAKPOINTS:
+  (gdb) info breakpoints
+  (gdb) i b
+
+DELETE BREAKPOINT:
+  (gdb) delete 1                      # Delete breakpoint #1
+  (gdb) d 1
+
+DELETE ALL BREAKPOINTS:
+  (gdb) delete
+  (gdb) d
+
+DISABLE/ENABLE BREAKPOINT:
+  (gdb) disable 1                     # Temporarily disable
+  (gdb) enable 1                      # Re-enable
+
+
+=============================================================================
+INSPECTING DATA
+=============================================================================
+
+PRINT VARIABLE:
+  (gdb) print count
+  (gdb) p count
+
+PRINT IN DIFFERENT FORMATS:
+  (gdb) p/x count     # Hexadecimal
+  (gdb) p/t count     # Binary
+  (gdb) p/d count     # Decimal (default for signed)
+  (gdb) p/u count     # Unsigned decimal
+  (gdb) p/o count     # Octal
+  (gdb) p/c count     # Character
+
+PRINT ARRAY ELEMENTS:
+  (gdb) p arr[0]
+  (gdb) p arr[3]
+  (gdb) p *arr@10     # Print first 10 elements of array
+
+PRINT EXPRESSION:
+  (gdb) p count * 2
+  (gdb) p arr[i] + arr[i+1]
+  (gdb) p (1 << 3)
+
+SHOW ALL LOCAL VARIABLES:
+  (gdb) info locals
+  (gdb) i lo
+
+SHOW ALL ARGUMENTS:
+  (gdb) info args
+  (gdb) i ar
+
+SHOW VARIABLE TYPE:
+  (gdb) ptype variable
+  (gdb) whatis variable
+
+
+=============================================================================
+CONTROLLING EXECUTION
+=============================================================================
+
+STEP OVER (execute current line, don't enter functions):
+  (gdb) next
+  (gdb) n
+
+STEP INTO (enter function calls):
+  (gdb) step
+  (gdb) s
+
+STEP OUT (finish current function):
+  (gdb) finish
+  (gdb) fin
+
+CONTINUE TO NEXT BREAKPOINT:
+  (gdb) continue
+  (gdb) c
+
+RUN UNTIL LINE:
+  (gdb) until 25                      # Run until line 25
+  (gdb) u 25
+
+STEP OVER N LINES:
+  (gdb) next 5                        # Execute next 5 lines
+
+
+=============================================================================
+VIEWING CODE & STACK
+=============================================================================
+
+SHOW CURRENT SOURCE CODE:
+  (gdb) list
+  (gdb) l
+
+SHOW MORE LINES:
+  (gdb) list 10                       # Show around line 10
+  (gdb) list func                     # Show around function
+  (gdb) list -                        # Show previous lines
+
+SET LIST SIZE:
+  (gdb) set listsize 20               # Show 20 lines at a time
+
+VIEW CALL STACK (backtrace):
+  (gdb) backtrace
+  (gdb) bt
+
+VIEW FULL BACKTRACE:
+  (gdb) backtrace full                # Include local variables
+  (gdb) bt full
+
+SWITCH STACK FRAMES:
+  (gdb) frame 1                       # Go to frame 1
+  (gdb) f 1
+  (gdb) up                            # Go up one frame
+  (gdb) down                          # Go down one frame
+
+SHOW FRAME INFO:
+  (gdb) info frame
+  (gdb) i f
+
+
+=============================================================================
+PRACTICAL EXAMPLE - DEBUG YOUR CODE
+=============================================================================
+
+EXAMPLE 1: Debug hex() function
+───────────────────────────────
+
+$ make BUILD_TYPE=Debug build
+$ gdb ./bin/main
+
+(gdb) b basics.cpp:15
+(gdb) run
+
+Program pauses at breakpoint in hex() function
+
+(gdb) info locals
+hex_number = 291
+
+(gdb) p hex_number
+$1 = 291
+
+(gdb) p/x hex_number
+$2 = 0x123
+
+(gdb) continue
+# Program continues and prints output
+
+
+EXAMPLE 2: Debug factorial recursion
+─────────────────────────────────────
+
+(gdb) b factorial
+(gdb) run
+
+Program pauses at factorial function
+
+(gdb) p n
+$1 = 5
+
+(gdb) bt
+# Shows call stack with all recursive calls
+
+(gdb) s
+# Step into recursive call
+
+(gdb) p n
+$2 = 4
+
+(gdb) bt
+# Stack now shows 2 levels
+
+(gdb) c
+# Continue to see final result
+
+
+EXAMPLE 3: Debug bit manipulation
+──────────────────────────────────
+
+(gdb) b bitwise.cpp:20
+(gdb) run
+
+(gdb) p byte
+$1 = 0
+
+(gdb) p bit
+$2 = 3
+
+(gdb) p (1 << bit)
+$3 = 8
+
+(gdb) p/t (1 << bit)
+$4 = 1000
+
+(gdb) n
+# Execute the line
+
+(gdb) p/t byte
+$5 = 1000
+
+
+EXAMPLE 4: Debug loop
+─────────────────────
+
+(gdb) b operators.cpp:230
+(gdb) run
+
+(gdb) p i
+$1 = 0
+
+(gdb) n
+# Next iteration
+
+(gdb) p i
+$2 = 1
+
+(gdb) n
+(gdb) p i
+$3 = 2
+
+
+=============================================================================
+MODIFYING VARIABLES
+=============================================================================
+
+CHANGE VARIABLE VALUE DURING DEBUG:
+  (gdb) set variable count = 100
+  (gdb) set var count = 100           # Short form
+  (gdb) p count
+  $1 = 100
+
+ALTERNATIVE SYNTAX:
+  (gdb) set count = 100
+
+USEFUL FOR:
+  • Testing different values without recompiling
+  • Forcing specific code paths
+  • Skipping problematic sections
+
+
+=============================================================================
+WATCHPOINTS (Data Breakpoints)
+=============================================================================
+
+BREAK WHEN VARIABLE CHANGES (write):
+  (gdb) watch count
+
+BREAK WHEN VARIABLE IS READ:
+  (gdb) rwatch count
+
+BREAK WHEN VARIABLE IS READ OR WRITTEN:
+  (gdb) awatch count
+
+CONDITIONAL WATCHPOINT:
+  (gdb) watch count if count > 10
+
+LIST WATCHPOINTS:
+  (gdb) info watchpoints
+  (gdb) i wat
+
+DELETE WATCHPOINT:
+  (gdb) delete 1
+
+
+=============================================================================
+USEFUL SETTINGS
+=============================================================================
+
+ENABLE TUI MODE (Text User Interface):
+  (gdb) tui enable                    # Split screen with source
+  (gdb) tui disable                   # Return to normal
+  Ctrl+x a                            # Toggle TUI mode
+
+TUI LAYOUTS:
+  (gdb) layout src                    # Source code only
+  (gdb) layout asm                    # Assembly only
+  (gdb) layout split                  # Source and assembly
+  (gdb) layout regs                   # Show registers
+
+PRETTY PRINTING (for STL containers):
+  (gdb) set print pretty on
+
+PRINT ARRAY LIMITS:
+  (gdb) set print elements 100        # Print up to 100 elements
+
+PAGINATION:
+  (gdb) set pagination off            # Don't pause output
+
+HISTORY:
+  (gdb) set history save on
+  (gdb) set history filename ~/.gdb_history
+
+
+=============================================================================
+COMMAND SHORTCUTS
+=============================================================================
+
+Full Command         | Short Form
+─────────────────────┼───────────
+break                | b
+info breakpoints     | i b
+delete               | d
+run                  | r
+continue             | c
+next                 | n
+step                 | s
+finish               | fin
+print                | p
+info locals          | i lo
+info args            | i ar
+backtrace            | bt
+list                 | l
+frame                | f
+quit                 | q
+
+
+=============================================================================
+DEBUGGING WITH ARGUMENTS
+=============================================================================
+
+RUN WITH COMMAND LINE ARGUMENTS:
+  (gdb) run arg1 arg2 arg3
+
+SET ARGUMENTS BEFORE RUNNING:
+  (gdb) set args arg1 arg2
+
+SHOW CURRENT ARGUMENTS:
+  (gdb) show args
+
+RUN WITH INPUT REDIRECTION:
+  (gdb) run < input.txt
+
+RUN WITH OUTPUT REDIRECTION:
+  (gdb) run > output.txt
+
+
+=============================================================================
+TIPS & TRICKS
+=============================================================================
+
+1. SHOW DISASSEMBLY:
+   (gdb) disassemble
+   (gdb) disas
+
+2. MEMORY EXAMINATION:
+   (gdb) x/10xb &variable             # 10 bytes in hex
+   (gdb) x/4xw &variable              # 4 words in hex
+   (gdb) x/s str                      # Print string
+
+3. PRINT SIZEOF:
+   (gdb) p sizeof(arr)
+
+4. CALL FUNCTIONS:
+   (gdb) call factorial(10)
+   (gdb) p factorial(10)
+
+5. REPEAT LAST COMMAND:
+   Just press ENTER
+
+6. COMMAND HISTORY:
+   Up/Down arrows to navigate
+
+7. SAVE BREAKPOINTS:
+   (gdb) save breakpoints bp.txt
+   (gdb) source bp.txt                # Load them back
+
+8. DEFINE CUSTOM COMMANDS:
+   (gdb) define pall
+   > info locals
+   > bt
+   > end
+
+
+=============================================================================
+COMMON ISSUES
+=============================================================================
+
+ISSUE 1: No debug symbols
+  SYMPTOM: Can't see variables, shows <optimized out>
+  FIX: Build with debug symbols
+       make BUILD_TYPE=Debug build
+       (ensure -g flag and -O0)
+
+ISSUE 2: Breakpoint doesn't work
+  SYMPTOM: Breakpoint never hits
+  FIX: Check if code is actually executed
+       Verify file path is correct
+       Try: break filename.cpp:line
+
+ISSUE 3: "No such file or directory"
+  SYMPTOM: Can't start debugging
+  FIX: Make sure binary exists
+       ls -la ./bin/main
+
+ISSUE 4: Variables show <optimized out>
+  SYMPTOM: Can't see variable values
+  FIX: Compile without optimization
+       Use -O0 flag instead of -O2/-O3
+
+
+=============================================================================
+COMPARISON: gdb vs VSCode
+=============================================================================
+
+┌─────────────────────┬─────────────────┬─────────────────┐
+│ Feature             │ gdb (CLI)       │ VSCode (GUI)    │
+├─────────────────────┼─────────────────┼─────────────────┤
+│ Learning curve      │ Steeper         │ Easier          │
+│ Speed               │ Faster startup  │ Slower startup  │
+│ Visual feedback     │ Text/TUI        │ Visual UI       │
+│ Remote debugging    │ Easy (gdbserver)│ Possible        │
+│ Scripting           │ Very powerful   │ Limited         │
+│ Integration         │ Terminal        │ Editor          │
+│ Mouse support       │ TUI only        │ Yes             │
+│ Reversible debug    │ Yes             │ Limited         │
+└─────────────────────┴─────────────────┴─────────────────┘
+
+RECOMMENDATION:
+  • Start with VSCode (easier)
+  • Learn gdb for remote/advanced debugging
+  • Use TUI mode for visual feedback in terminal
+
+
+=============================================================================
+GDB VS LLDB COMMAND COMPARISON
+=============================================================================
+
+┌─────────────────────────┬─────────────────────────┐
+│ GDB                     │ LLDB                    │
+├─────────────────────────┼─────────────────────────┤
+│ break main              │ b main                  │
+│ info breakpoints        │ breakpoint list         │
+│ delete 1                │ breakpoint delete 1     │
+│ info locals             │ frame variable          │
+│ info args               │ frame variable          │
+│ backtrace               │ thread backtrace        │
+│ frame 1                 │ frame select 1          │
+│ set var x = 10          │ expr x = 10             │
+│ watch count             │ watchpoint set var count│
+│ x/10xb &var             │ memory read &var        │
+│ disassemble             │ disassemble             │
+└─────────────────────────┴─────────────────────────┘
+
+
+=============================================================================
+QUICK REFERENCE
+=============================================================================
+
+START:     gdb ./bin/main
+BREAK:     b main
+RUN:       r
+STEP:      n (over), s (into), fin (out)
+CONTINUE:  c
+PRINT:     p variable
+VARS:      info locals
+STACK:     bt
+LIST:      l
+QUIT:      q
+TUI:       Ctrl+x a
+
+=============================================================================
