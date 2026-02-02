@@ -39,6 +39,7 @@ Diagnostics:
       # Variables: snake_case
       readability-identifier-naming.VariableCase: lower_case
       readability-identifier-naming.ParameterCase: lower_case
+      readability-identifier-naming.ConstantParameterCase: lower_case
       readability-identifier-naming.LocalVariableCase: lower_case
 
       # Constants: SCREAMING_CASE
