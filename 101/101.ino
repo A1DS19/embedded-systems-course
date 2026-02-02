@@ -1,11 +1,11 @@
-static auto NUMBER_1 = "\n\r" + String(1, BIN);
+const char NUMBER_1[] PROGMEM = "\n\rHello world";
 
 void setup() {
   Serial.begin(115200);
-  Serial.write("\n\rSetup");
+  Serial.print(F("\n\rSetup"));
 }
 
 void loop() {
-  Serial.write(NUMBER_1.c_str());
+  Serial.print((__FlashStringHelper *)NUMBER_1);
   delay(1000);
 }
