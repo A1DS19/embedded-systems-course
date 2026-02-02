@@ -2,7 +2,7 @@
 
 // Built-in LED on most Arduinos (pin 13)
 constexpr uint8_t LED_PIN = LED_BUILTIN;
-constexpr unsigned long BLINK_INTERVAL_MS = 500;
+constexpr unsigned long BLINK_INTERVAL_MS = 100;
 
 // Create LED instance
 BlinkLed led(LED_PIN);
