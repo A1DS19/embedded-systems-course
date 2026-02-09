@@ -1,0 +1,19 @@
+# For AVR projects
+[assembler]
+assembler = "gas"
+instruction_set = "avr"
+
+# For STM32/ARM projects
+# [assembler]
+# assembler = "gas"
+# instruction_set = "arm"
+
+# For x86 32-bit
+# [assembler]
+# assembler = "nasm"
+# instruction_set = "x86"
+
+# For x86 64-bit
+# [assembler]
+# assembler = "nasm"
+# instruction_set = "x86_64"

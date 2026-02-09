@@ -1,0 +1,26 @@
+CompileFlags:
+  Add:
+    # Arduino AVR core headers
+    - -I/home/dev/.arduino15/packages/arduino/hardware/avr/1.8.7/cores/arduino
+    - -I/home/dev/.arduino15/packages/arduino/hardware/avr/1.8.7/variants/eightanaloginputs
+    - -I/home/dev/.arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/avr/include
+    - -I/home/dev/.arduino15/packages/arduino/tools/avr-gcc/7.3.0-atmel3.6.1-arduino7/lib/gcc/avr/7.3.0/include
+
+    # Treat .ino as C++
+    - -xc++
+    - -std=c++17
+
+    # AVR defines
+    - -D__AVR_ATmega328P__
+    - -DF_CPU=16000000L
+    - -DARDUINO=10819
+    - -DARDUINO_AVR_NANO
+    - -DARDUINO_ARCH_AVR
+
+  Remove:
+    - -W*
+
+Diagnostics:
+  Suppress:
+    - pp_file_not_found
+    - builtin_definition
