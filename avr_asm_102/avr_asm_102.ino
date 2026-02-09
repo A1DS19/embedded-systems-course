@@ -9,10 +9,10 @@ extern "C" {
 void setup() {
   Serial.begin(115200);
 
-  uint16_t result_add = asm_add(8, 8);
+  auto result_add = asm_add(8, 8);
   Serial.println(result_add);
 
-  uint16_t result_mul = asm_mul(10, 10);
+  auto result_mul = asm_mul(10, 10);
   Serial.println(result_mul);
 
   asm_iterate_numbers(numbers);
